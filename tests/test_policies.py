@@ -35,6 +35,21 @@ class BanditPolicyTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             policy.update("a", 2)
 
+    def test_simulation_rejects_non_positive_rounds(self):
+        policy = UCB1Policy(["a"])
+        with self.assertRaisesRegex(ValueError, "rounds"):
+            run_simulation(policy, {"a": 0.5}, rounds=0)
+
+    def test_simulation_rejects_mismatched_arms_and_rates(self):
+        policy = UCB1Policy(["a", "b"])
+        with self.assertRaisesRegex(ValueError, "true_rates"):
+            run_simulation(policy, {"a": 0.5}, rounds=10)
+
+    def test_simulation_rejects_invalid_probabilities(self):
+        policy = UCB1Policy(["a"])
+        with self.assertRaisesRegex(ValueError, "probabilities"):
+            run_simulation(policy, {"a": 1.2}, rounds=10)
+
 
 if __name__ == "__main__":
     unittest.main()
