@@ -16,6 +16,24 @@ class SimulationResult:
 
 
 def run_simulation(policy: BanditPolicy, true_rates: Dict[str, float], rounds: int = 1000, seed: int = 7) -> SimulationResult:
+    if rounds <= 0:
+        raise ValueError("rounds must be greater than 0")
+    if not true_rates:
+        raise ValueError("at least one true rate is required")
+
+    missing_rates = set(policy.arms) - set(true_rates)
+    extra_rates = set(true_rates) - set(policy.arms)
+    if missing_rates or extra_rates:
+        raise ValueError("policy arms must exactly match true_rates keys")
+
+    invalid_rates = {
+        arm: rate
+        for arm, rate in true_rates.items()
+        if rate < 0 or rate > 1
+    }
+    if invalid_rates:
+        raise ValueError("true_rates values must be probabilities in [0, 1]")
+
     rng = random.Random(seed)
     pulls = {arm: 0 for arm in true_rates}
     rewards = {arm: 0.0 for arm in true_rates}
